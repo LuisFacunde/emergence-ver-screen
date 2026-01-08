@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": 500,
+    "message": "Erro de banco de dados: ORA-00933: comando SQL n\u00e3o encerrado adequadamente"
+  },
+  "success": false
+}

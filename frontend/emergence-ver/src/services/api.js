@@ -92,54 +92,66 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // API Service
 const apiService = {
-  // Buscar pacientes (mockado)
+  // Buscar pacientes (Integrado com Backend)
   async searchPatients(prontuario = '', nome = '') {
-    // Simula delay de rede
-    await delay(500);
+    try {
+      const params = new URLSearchParams();
+      if (prontuario) params.append('prontuario', prontuario);
+      if (nome) params.append('nome', nome);
 
-    // Filtrar dados mockados
-    let filtered = mockPatients;
-    
-    if (prontuario) {
-      filtered = filtered.filter(p => 
-        p.prontuario.includes(prontuario)
-      );
-    }
-    
-    if (nome) {
-      filtered = filtered.filter(p => 
-        p.nome.toLowerCase().includes(nome.toLowerCase())
-      );
-    }
+      const response = await fetch(`${API_BASE_URL}/patients/search?${params}`);
+      const result = await response.json();
 
-    return {
-      success: true,
-      data: filtered,
-      total: filtered.length
-    };
-  },
-
-  // Buscar paciente por ID (mockado)
-  async getPatientById(id) {
-    await delay(300);
-    
-    const patient = mockPatients.find(p => p.id === parseInt(id));
-    
-    if (patient) {
-      return {
-        success: true,
-        data: patient
-      };
-    } else {
+      if (result.success) {
+        // Mapear dados se necessário, o backend já retorna formato compatível
+        return {
+          success: true,
+          data: result.data || [],
+          total: (result.data || []).length
+        };
+      } else {
+        console.warn('Erro na resposta da API:', result);
+        // Fallback para mock se falhar (opcional, ou apenas erro)
+        return {
+          success: false,
+          error: result.error
+        };
+      }
+    } catch (error) {
+      console.error('Erro ao buscar pacientes:', error);
+      // Fallback para usuário não ficar travado durante dev sem DB
       return {
         success: false,
         error: {
-          message: 'Paciente não encontrado',
-          code: 404
+          message: 'Erro de conexão. Verifique se o backend e VPN estão ativos.',
+          details: error.message
         }
       };
     }
   },
+
+  // Buscar paciente por ID (mockado - manter ou implementar logic similar se houver endpoint)
+  // Por enquanto mantemos o mock para detalhes que não sejam busca, ou usamos o resultado da busca
+  async getPatientById(id) {
+    // Implementação simplificada reutilizando a busca se possível, ou mantendo mock
+    // Como o endpoint de busca retorna todos os dados necessários, podemos simular
+    await delay(300);
+    const patient = mockPatients.find(p => p.id === parseInt(id));
+    if (patient) return { success: true, data: patient };
+    return { success: false, error: { message: 'Paciente não encontrado', code: 404 } };
+  },
+
+  async getPatientFiles(patientId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/patients/${patientId}/files`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('API Error:', error);
+      return { success: false, error: error };
+    }
+  },
+
 
   // ===== FUNÇÕES PREPARADAS PARA INTEGRAÇÃO FUTURA =====
   // Descomente quando o backend estiver pronto
@@ -165,6 +177,17 @@ const apiService = {
           code: 500
         }
       };
+    }
+  },
+
+  async getPatientFiles(patientId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/patients/${patientId}/files`);
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('API Error:', error);
+        return { success: false, error: error };
     }
   },
 

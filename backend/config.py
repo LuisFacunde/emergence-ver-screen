@@ -16,6 +16,19 @@ class Config:
     PORT = int(os.getenv('PORT', 5000))
     HOST = os.getenv('HOST', '0.0.0.0')
 
+    # Oracle Database
+    ORACLE_HOST = os.getenv('ORACLE_HOST', '192.168.4.90')
+    ORACLE_PORT = os.getenv('ORACLE_PORT', '1521')
+    ORACLE_SERVICE = os.getenv('ORACLE_SERVICE', 'prd')
+    ORACLE_USER = os.getenv('ORACLE_USER', 'dbamv')
+    ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'fav1983db2')
+    
+    # File System
+    # Suporte a múltiplos caminhos separados por ponto e vírgula (;)
+    # Ex: \\server1\share;\\server2\share\subdir
+    _files_env = os.getenv('FILES_BASE_PATH', r'\\192.168.4.52\c$\exames;\\192.168.4.18\c$\apache24\htdocs\fav_exames\anexo')
+    FILES_BASE_PATHS = [p.strip() for p in _files_env.split(';') if p.strip()]
+
 
 class DevelopmentConfig(Config):
     """Configuração para ambiente de desenvolvimento"""

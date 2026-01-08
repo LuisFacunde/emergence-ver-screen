@@ -4,41 +4,46 @@ import SearchForm from './components/SearchForm'
 import Alert from './components/Alert'
 import PatientTable from './components/PatientTable'
 import Pagination from './components/Pagination'
-import { mockPatients } from './data/mockData'
-import './App.css'
-
+import apiService from './services/api';
 
 function App() {
   const [patients, setPatients] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [showAlert, setShowAlert] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
 
-  const handleSearch = (prontuario, nome) => {
+  const handleSearch = async (prontuario, nome) => {
     if (!prontuario && !nome) {
       alert('USE OS CAMPOS ACIMA PARA PESQUISAR!\nPreencha por nome do paciente ou pelo prontuário');
       return;
     }
 
-    let filtered = mockPatients;
-    
-    if (prontuario) {
-      filtered = filtered.filter(p => 
-        p.prontuario.includes(prontuario)
-      );
-    }
-    
-    if (nome) {
-      filtered = filtered.filter(p => 
-        p.nome.toLowerCase().includes(nome.toLowerCase())
-      );
-    }
-
-    setPatients(filtered);
-    setTotalRecords(filtered.length);
+    setIsLoading(true);
     setCurrentPage(1);
-    setShowAlert(false);
+
+    try {
+      const result = await apiService.searchPatients(prontuario, nome);
+
+      if (result.success) {
+        setPatients(result.data);
+        setTotalRecords(result.data.length);
+      } else {
+        console.error("Erro na busca:", result.error);
+        alert(`Erro na busca: ${result.error?.message || 'Erro desconhecido'}`);
+        setPatients([]);
+        setTotalRecords(0);
+      }
+    } catch (error) {
+      console.error("Erro inesperado:", error);
+      alert("Erro inesperado ao buscar pacientes.");
+      setPatients([]);
+      setTotalRecords(0);
+    } finally {
+      setIsLoading(false);
+      setShowAlert(false);
+    }
   };
 
   const totalPages = Math.ceil(totalRecords / itemsPerPage);
@@ -70,15 +75,22 @@ function App() {
 
           <SearchForm onSearch={handleSearch} />
 
-          {showAlert && patients.length === 0 && (
-            <Alert 
+          {isLoading && (
+            <div className="loading-overlay">
+              <div className="spinner"></div>
+              <p>Carregando pacientes e arquivos...</p>
+            </div>
+          )}
+
+          {showAlert && patients.length === 0 && !isLoading && (
+            <Alert
               type="info"
               title="USE OS CAMPOS ACIMA PARA PESQUISAR!"
               message="Preencha por nome do paciente ou pelo prontuário"
             />
           )}
 
-          {patients.length > 0 && (
+          {patients.length > 0 && !isLoading && (
             <>
               <Pagination
                 currentPage={currentPage}
@@ -104,7 +116,7 @@ function App() {
             </>
           )}
 
-          {!showAlert && patients.length === 0 && (
+          {!showAlert && patients.length === 0 && !isLoading && (
             <div className="no-results">
               Nenhum paciente encontrado com os critérios informados.
             </div>

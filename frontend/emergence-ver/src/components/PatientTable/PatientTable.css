@@ -12,7 +12,8 @@
 }
 
 .table thead {
-  background-color: #1e293b;
+  background-color: #002d6b;
+  /* Dark blue from screenshot */
   color: white;
 }
 
