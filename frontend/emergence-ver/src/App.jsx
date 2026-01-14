@@ -1,34 +1,120 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import Header from './components/Header'
+import SearchForm from './components/SearchForm'
+import Alert from './components/Alert'
+import PatientTable from './components/PatientTable'
+import Pagination from './components/Pagination'
+import apiService from './services/api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [patients, setPatients] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [showAlert, setShowAlert] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const itemsPerPage = 10;
+
+  const handleSearch = async (prontuario, nome) => {
+    if (!prontuario && !nome) {
+      alert('USE OS CAMPOS ACIMA PARA PESQUISAR!\nPreencha por nome do paciente ou pelo prontuário');
+      return;
+    }
+
+    setIsLoading(true);
+    setCurrentPage(1);
+
+    try {
+      const result = await apiService.searchPatients(prontuario, nome);
+
+      if (result.success) {
+        setPatients(result.data);
+        setTotalRecords(result.data.length);
+      } else {
+        console.error("Erro na busca:", result.error);
+        alert(`Erro na busca: ${result.error?.message || 'Erro desconhecido'}`);
+        setPatients([]);
+        setTotalRecords(0);
+      }
+    } catch (error) {
+      console.error("Erro inesperado:", error);
+      alert("Erro inesperado ao buscar pacientes.");
+      setPatients([]);
+      setTotalRecords(0);
+    } finally {
+      setIsLoading(false);
+      setShowAlert(false);
+    }
+  };
+
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPatients = patients.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 2)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <Header />
+
+      <main className="main-content">
+        <div className="container">
+          <div className="page-title">
+            <span className="icon">☰</span> PESQUISA DE PACIENTES
+          </div>
+
+          <SearchForm onSearch={handleSearch} />
+
+          {isLoading && (
+            <div className="loading-overlay">
+              <div className="spinner"></div>
+              <p>Carregando pacientes e arquivos...</p>
+            </div>
+          )}
+
+          {showAlert && patients.length === 0 && !isLoading && (
+            <Alert
+              type="info"
+              title="USE OS CAMPOS ACIMA PARA PESQUISAR!"
+              message="Preencha por nome do paciente ou pelo prontuário"
+            />
+          )}
+
+          {patients.length > 0 && !isLoading && (
+            <>
+              <PatientTable patients={currentPatients} />
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRecords={totalRecords}
+                startIndex={startIndex}
+                itemsPerPage={itemsPerPage}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+              />
+            </>
+          )}
+
+          {!showAlert && patients.length === 0 && !isLoading && (
+            <div className="no-results">
+              Nenhum paciente encontrado com os critérios informados.
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
 

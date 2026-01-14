@@ -1,0 +1,1 @@
+b'Erro de banco de dados: ORA-00933: comando SQL n\xe3o encerrado adequadamente'
