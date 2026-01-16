@@ -141,13 +141,24 @@ const apiService = {
     return { success: false, error: { message: 'Paciente não encontrado', code: 404 } };
   },
 
-  async getPatientFiles(patientId) {
+  async getPatientFiles(patientId, page = 1, perPage = 10, signal = null) {
     try {
-      const response = await fetch(`${API_BASE_URL}/patients/${patientId}/files`);
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('per_page', perPage);
+
+      const options = signal ? { signal } : {};
+      const response = await fetch(
+        `${API_BASE_URL}/patients/${patientId}/files?${params}`,
+        options
+      );
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('API Error:', error);
+      // Não logar erro se foi abortado intencionalmente
+      if (error.name !== 'AbortError') {
+        console.error('API Error:', error);
+      }
       return { success: false, error: error };
     }
   },

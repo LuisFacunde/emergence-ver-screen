@@ -1,6 +1,6 @@
 .table-container {
   overflow-x: auto;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
 }

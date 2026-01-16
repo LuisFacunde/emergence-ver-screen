@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './App.css'
 import Header from './components/Header'
 import SearchForm from './components/SearchForm'
 import Alert from './components/Alert'
@@ -63,6 +64,7 @@ function App() {
     }
   };
 
+
   return (
     <div className="app">
       <Header />
@@ -92,16 +94,6 @@ function App() {
 
           {patients.length > 0 && !isLoading && (
             <>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalRecords={totalRecords}
-                startIndex={startIndex}
-                itemsPerPage={itemsPerPage}
-                onPrevious={handlePreviousPage}
-                onNext={handleNextPage}
-              />
-
               <PatientTable patients={currentPatients} />
 
               <Pagination

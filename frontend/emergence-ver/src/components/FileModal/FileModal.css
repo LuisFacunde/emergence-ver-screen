@@ -167,3 +167,96 @@
     color: #666;
     font-style: italic;
 }
+
+.modal-pagination-info {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.modal-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-pagination-modal {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-pagination-modal:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.btn-pagination-modal:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #9ca3af;
+}
+
+.page-indicator {
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
+}
+
+.btn-download {
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.btn-download:hover {
+    transform: scale(1.2);
+}
+
+.file-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-error {
+    text-align: center;
+    padding: 20px;
+    color: #dc2626;
+    background-color: #fee2e2;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Fix for draggable modal interaction:
+   Allow clicking on the background (elements behind the modal)
+   by making the wrapper transparent to clicks, but keeping the modal clickable.
+*/
+.draggable-modal-wrapper {
+    pointer-events: none !important;
+}
+
+.draggable-modal-wrapper .ant-modal {
+    pointer-events: auto !important;
+}
+
+.is-dragging {
+    cursor: move;
+}

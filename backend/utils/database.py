@@ -43,13 +43,29 @@ def get_exam_types_mapping():
     try:
         conn = get_oracle_connection()
         cursor = conn.cursor()
-        # Selecionar campos relevantes
-        cursor.execute("SELECT nome_exame, tipo FROM exames")
+        # Selecionar campos relevantes: id (conforme usuario), nome_exame (cod string), tipo (descricao)
+        # Assumindo que a coluna de ID é 'id' conforme solicitado.
+        # Se 'id' não existir, isso falhará. Mas vamos confiar na instrução.
+        cursor.execute("SELECT id, nome_exame, tipo FROM exames")
         rows = cursor.fetchall()
         for row in rows:
-            if row[0] and row[1]:
-                # Chave: codigo do exame (nome_exame), Valor: descrição (tipo)
-                mapping[row[0].strip().upper()] = row[1].strip()
+            # row[0] = id (numeric)
+            # row[1] = nome_exame (string code)
+            # row[2] = tipo (description)
+            exam_id = row[0]
+            code = row[1]
+            desc = row[2]
+            
+            if desc:
+                clean_desc = desc.strip()
+                # Mapear pelo ID (para busca na tabela anexos_exames)
+                if exam_id is not None:
+                    mapping[exam_id] = clean_desc
+                
+                # Manter mapeamento antigo por segurança (pelo código string)
+                if code:
+                    mapping[code.strip().upper()] = clean_desc
+                    
         cursor.close()
     except Exception as e:
         print(f"Erro ao buscar tipos de exames: {e}")

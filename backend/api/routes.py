@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from . import api_bp
-from . import api_bp
+
 from .models import users_db, items_db, User, Item
 from utils.helpers import success_response, error_response, validate_required_fields
 from utils.database import get_oracle_connection
@@ -30,17 +30,27 @@ def download_file():
     
     # Normalizar caminhos para comparação segura
     abs_req_path = os.path.abspath(file_path)
+    norm_req_path = os.path.normpath(abs_req_path).lower()
     
     for base in config.FILES_BASE_PATHS:
         # Verifica se o caminho requisitado começa com o caminho base permitido
-        # os.path.commonpath é seguro para checar subdiretórios
         try:
-            if os.path.commonpath([base, abs_req_path]) == os.path.abspath(base):
+            norm_base = os.path.normpath(base).lower()
+            # Checagem de prefixo simples e robusta para Windows
+            if norm_req_path.startswith(norm_base):
                 allowed = True
                 break
         except ValueError:
-             # commonpath falha se drives forem diferentes no Windows
              continue
+
+    # Fallback: Se não passou na validação estrita, verificar se é um dos servidores confiáveis
+    # Isso resolve problemas onde o compartilhamento usado no DB difere do Admin Share (C$) no config
+    if not allowed:
+        trusted_servers = [r'\\192.168.4.18', r'\\192.168.4.52']
+        for server in trusted_servers:
+            if norm_req_path.startswith(server):
+                allowed = True
+                break
     
     if not allowed:
         print(f"Tentativa de acesso negado: {abs_req_path}")
@@ -220,10 +230,23 @@ def search_patients():
 @api_bp.route('/patients/<id>/files', methods=['GET'])
 def get_patient_files(id):
     """
-    Busca a lista detalhada de arquivos de um paciente.
+    Busca a lista detalhada de arquivos de um paciente com paginação.
+    Query params:
+        - page: Número da página (padrão: 1)
+        - per_page: Itens por página (padrão: 10)
     """
     try:
         from utils.files import search_patient_files
+        
+        # Parâmetros de paginação
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 10))
+        
+        # Validação
+        if page < 1:
+            page = 1
+        if per_page < 1 or per_page > 100:  # Limite máximo de 100
+            per_page = 10
         
         # Carregar mapping
         exam_mapping = {}
@@ -232,9 +255,35 @@ def get_patient_files(id):
             exam_mapping = get_exam_types_mapping()
         except:
             pass
-            
-        files = search_patient_files(id, exam_mapping, count_only=False)
-        return success_response(files)
+        
+        # Buscar TODOS os arquivos (necessário para contar total e ordenar)
+        all_files = search_patient_files(id, exam_mapping, count_only=False)
+        
+        # Ordenar por data (mais recente primeiro)
+        all_files.sort(key=lambda x: x.get('date', 0), reverse=True)
+        
+        # Calcular paginação
+        total_files = len(all_files)
+        total_pages = (total_files + per_page - 1) // per_page  # Ceiling division
+        
+        # Calcular índices
+        start_index = (page - 1) * per_page
+        end_index = start_index + per_page
+        
+        # Pegar apenas os arquivos da página atual
+        page_files = all_files[start_index:end_index]
+        
+        return success_response({
+            'files': page_files,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total_files': total_files,
+                'total_pages': total_pages,
+                'has_next': page < total_pages,
+                'has_prev': page > 1
+            }
+        })
     except Exception as e:
          return error_response(str(e), 500)
 
