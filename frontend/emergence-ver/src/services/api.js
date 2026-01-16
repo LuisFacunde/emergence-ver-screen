@@ -146,10 +146,10 @@ const apiService = {
       const params = new URLSearchParams();
       params.append('page', page);
       params.append('per_page', perPage);
-      
+
       const options = signal ? { signal } : {};
       const response = await fetch(
-        `${API_BASE_URL}/patients/${patientId}/files?${params}`, 
+        `${API_BASE_URL}/patients/${patientId}/files?${params}`,
         options
       );
       const result = await response.json();

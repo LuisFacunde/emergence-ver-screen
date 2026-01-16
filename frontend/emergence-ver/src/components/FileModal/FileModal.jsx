@@ -240,7 +240,7 @@ function FileModal({ isOpen, onClose, patientId, patientName }) {
                     open={true}
                     onCancel={() => closePreview(preview.id)}
                     footer={null}
-                    width={500}
+                    width={800}
                     wrapClassName="draggable-modal-wrapper"
                     mask={false} // PERMITE INTERAÇÃO COM OUTRAS JANELAS
                     maskClosable={false} // Impede fechar ao clicar "fora" (necessário mesmo sem mask visível)
@@ -262,7 +262,7 @@ function FileModal({ isOpen, onClose, patientId, patientName }) {
                     }}
                 >
                     <div
-                        style={{ height: '500px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f2f5', overflow: 'hidden' }}
+                        style={{ height: '600px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f2f5', overflow: 'hidden' }}
                     >
                         {preview.type === 'pdf' ? (
                             <iframe

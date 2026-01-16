@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from . import api_bp
-from . import api_bp
+
 from .models import users_db, items_db, User, Item
 from utils.helpers import success_response, error_response, validate_required_fields
 from utils.database import get_oracle_connection
