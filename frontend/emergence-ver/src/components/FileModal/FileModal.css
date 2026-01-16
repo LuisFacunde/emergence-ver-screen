@@ -244,3 +244,19 @@
     border-radius: 4px;
     font-weight: 500;
 }
+
+/* Fix for draggable modal interaction:
+   Allow clicking on the background (elements behind the modal)
+   by making the wrapper transparent to clicks, but keeping the modal clickable.
+*/
+.draggable-modal-wrapper {
+    pointer-events: none !important;
+}
+
+.draggable-modal-wrapper .ant-modal {
+    pointer-events: auto !important;
+}
+
+.is-dragging {
+    cursor: move;
+}

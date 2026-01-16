@@ -11,21 +11,33 @@ const ITEMS_PER_PAGE = 10;
 // Wrapper componente to providing nodeRef to Draggable
 const DraggableModalWrapper = ({ modal, id, onFocus }) => {
     const dragRef = useRef(null);
+    const [dragging, setDragging] = useState(false);
 
-    // Simplificação: Removemos o estado 'disabled' e usamos o 'handle' do Draggable
-    // para garantir que o arraste só ocorra pelo cabeçalho.
     return (
         <Draggable
             nodeRef={dragRef}
-            disabled={false} // Habilitado sempre, o handle controla onde pode clicar
-            handle=".ant-modal-header" // Só arrasta se clicar no header (título)
+            disabled={false}
+            handle=".ant-modal-header"
             onMouseDown={() => onFocus(id)}
+            onStart={() => setDragging(true)}
+            onStop={() => setDragging(false)}
         >
             <div
                 ref={dragRef}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: 'auto', position: 'relative' }}
             >
                 {modal}
+                {dragging && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 9999,
+                        background: 'transparent'
+                    }} />
+                )}
             </div>
         </Draggable>
     );
@@ -228,8 +240,11 @@ function FileModal({ isOpen, onClose, patientId, patientName }) {
                     open={true}
                     onCancel={() => closePreview(preview.id)}
                     footer={null}
-                    width={600}
+                    width={500}
+                    wrapClassName="draggable-modal-wrapper"
                     mask={false} // PERMITE INTERAÇÃO COM OUTRAS JANELAS
+                    maskClosable={false} // Impede fechar ao clicar "fora" (necessário mesmo sem mask visível)
+                    keyboard={false} // Opcional: impede fechar com ESC para evitar acidentes
                     style={{
                         top: 50 + (index * 30),
                         left: (index * 30)

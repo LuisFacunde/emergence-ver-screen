@@ -1,0 +1,1 @@
+Oracle Client initialized successfully.
